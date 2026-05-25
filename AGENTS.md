@@ -102,13 +102,15 @@ If prompted for the database password, use the one from 2b.
 
 **Expected:** `Finished supabase link.`
 
-#### 2d. Apply migrations (5 tables + RLS)
+#### 2d. Apply migrations (5 tables + RLS + ingest tokens)
 
 ```bash
 npx supabase db push
 ```
 
-This runs `supabase/migrations/0001_init.sql` — creates tables `profiles`, `posts`, `follower_snapshots`, `audience_demographics`, `imports` with Row-Level Security policies.
+This applies both migrations in order:
+- `supabase/migrations/0001_init.sql` — creates tables `profiles`, `posts`, `follower_snapshots`, `audience_demographics`, `imports` with Row-Level Security policies.
+- `supabase/migrations/0002_ingest_tokens.sql` — adds the `ingest_tokens` table used by the optional capture extension.
 
 **Expected:** `Finished supabase db push.`
 
@@ -123,6 +125,18 @@ npx supabase projects api-keys --project-ref <project-ref>
 **Expected:** a table listing keys including `anon`. Copy the `anon` key value.
 
 The project URL is always: `https://<project-ref>.supabase.co`
+
+#### 2f. (Optional) Deploy the ingest edge function
+
+*Only required if the user wants the browser capture extension (step 8). Skip otherwise.*
+
+```bash
+npx supabase functions deploy ingest
+```
+
+**Expected:** `Deployed Function ingest on project <project-ref>.`
+
+> **Note:** Supabase auto-injects `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` into deployed edge functions — no manual secret configuration needed.
 
 ---
 
@@ -253,6 +267,7 @@ Tell the user:
 | `supabase link --project-ref <ref>` | Agent (CLI) |
 | `supabase db push` | Agent (CLI) |
 | `supabase projects api-keys --project-ref <ref>` | Agent (CLI) |
+| `supabase functions deploy ingest` (optional — extension only) | Agent (CLI) |
 | Write `.env.local` | Agent (CLI) |
 | `npm run dev` OR `vercel login` + `vercel --prod` | Agent (Vercel login = human browser) |
 | Click magic-link email | Human |

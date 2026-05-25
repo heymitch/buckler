@@ -66,10 +66,11 @@ Deno.serve(async (req) => {
     if (type === 'profile_snapshot' || type === 'profile_identity') {
       const d = (data ?? {}) as any;
       if (d.headline) await admin.from('profiles').update({ headline: d.headline }).eq('id', profileId);
-      if (d.follower_count != null) {
+      const fc = n(d.follower_count);
+      if (fc != null) {
         await admin.from('follower_snapshots').upsert({
           profile_id: profileId, date: new Date().toISOString().slice(0, 10),
-          follower_count: n(d.follower_count)!,
+          follower_count: fc,
         }, { onConflict: 'profile_id,date' });
       }
       return json({ ok: true });
@@ -77,7 +78,8 @@ Deno.serve(async (req) => {
 
     return json({ ok: true, ignored: type ?? 'unknown' });
   } catch (e) {
-    return json({ error: String(e) }, 500);
+    console.error('ingest error', e);
+    return json({ error: 'internal error' }, 500);
   }
 });
 
