@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Signal
 
-## Getting Started
+Open-source, self-hostable LinkedIn analytics. A privacy-first Shield alternative.
 
-First, run the development server:
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=REPLACE_WITH_REPO_URL)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+> **Note:** Replace `REPLACE_WITH_REPO_URL` in the deploy button above with your GitHub repo URL after pushing.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Why
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Shield Analytics is winding down. Signal is the self-hosted replacement — built on file imports (bring your own data), so there is no scraping, no ToS risk, and no third-party servers touching your data. You connect your own Supabase project; your analytics live there and nowhere else.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Multi-profile dashboard** — one deploy tracks multiple LinkedIn profiles. Built for ghostwriters and agencies managing clients.
+- **Four views** — Overview, Posts, Audience, Health.
+- **Shield CSV import** — drop in your full historical export from Shield before it goes dark.
+- **LinkedIn official XLSX import** — LinkedIn's own creator-analytics export (up to 365 days). No scraping.
+- **Magic-link auth** — Supabase email magic links. No passwords.
+- **Fully self-hostable** — deploy to Vercel or run locally. Your Supabase, your data.
+- **Signup lock** — set `SIGNAL_LOCK_SIGNUPS=true` to close registration after the owner signs up, keeping your instance private.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Self-host in ~10 minutes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Create a free Supabase project** at [supabase.com](https://supabase.com). Copy your project ref, URL, and anon key from the project's API settings.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. **Clone this repo and install dependencies.**
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/signal.git
+   cd signal
+   npm install
+   ```
+
+3. **Apply the database schema.**
+   ```bash
+   npx supabase link --project-ref <your-project-ref>
+   npx supabase db push
+   ```
+   This creates the tables and Row-Level Security policies from `supabase/migrations/0001_init.sql`.
+
+4. **Configure environment variables.**
+   ```bash
+   cp .env.example .env.local
+   ```
+   Open `.env.local` and fill in:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=https://<your-project-ref>.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
+
+   # Optional: set to true to disable new signups after you register
+   SIGNAL_LOCK_SIGNUPS=true
+   ```
+
+5. **Deploy or run locally.**
+   - **Vercel:** click the Deploy button at the top of this README and paste your env vars into the Vercel project settings.
+   - **Local:** `npm run dev` — open [http://localhost:3000](http://localhost:3000).
+
+6. **Sign in, create a profile, and import your data.**
+   Use the magic-link flow to authenticate, create a LinkedIn profile, then head to `/import` to upload your files.
+
+---
+
+## Getting your data
+
+**Shield CSV**
+In Shield, open the dashboard and click the CSV export option next to the time-period selector. Do this before Shield shuts down — historical post data is not recoverable from LinkedIn alone.
+
+**LinkedIn XLSX**
+LinkedIn → your profile → Settings → Analytics → Export post analytics. LinkedIn allows exports up to 365 days. The file arrives as an `.xlsx`.
+
+---
+
+## Importing
+
+1. Go to `/import`.
+2. Select the source: **Shield CSV** or **LinkedIn XLSX**.
+3. Choose the profile to import into.
+4. Upload the file. Signal processes it client-side and writes records to your Supabase database.
+
+---
+
+## Roadmap
+
+- **Passive capture browser extension** — optional add-on for live data without manual exports (planned, not in this version).
+- **Audience demographics** — follower industry, location, and seniority breakdowns.
+- **Follower-growth tracking** — historical follower counts over time.
+
+---
+
+## Privacy
+
+Signal is import-based. There is no scraping, no browser automation against LinkedIn, and no external API calls for your data. When you self-host, every record lives in the Supabase project you created — no data ever touches this project's infrastructure or anyone else's.
+
+---
+
+## License
+
+MIT — see [LICENSE](./LICENSE).
