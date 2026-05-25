@@ -4,6 +4,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const syncEl = document.getElementById('sync-val')!;
   const queueEl = document.getElementById('queue-val')!;
   const pauseEl = document.getElementById('pause-val')!;
+  const autoCaptureToggle = document.getElementById('auto-capture-toggle') as HTMLInputElement;
+  const autoCaptureVal = document.getElementById('auto-capture-val')!;
+  const intervalVal = document.getElementById('interval-val')!;
+  const lastAutoVal = document.getElementById('last-auto-val')!;
+  const nextAutoVal = document.getElementById('next-auto-val')!;
+
+  function fmtTime(iso?: string): string {
+    if (!iso) return 'NEVER';
+    return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
 
   // Load status
   chrome.runtime.sendMessage({ type: 'GET_STATUS' }, (status) => {
@@ -37,6 +47,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     pauseEl.textContent = status.paused_until && Date.now() < status.paused_until
       ? new Date(status.paused_until).toLocaleTimeString()
       : 'NO';
+
+    // Auto-capture status
+    const acOn = status.auto_capture ?? false;
+    autoCaptureToggle.checked = acOn;
+    autoCaptureVal.textContent = acOn ? 'ON' : 'OFF';
+    autoCaptureVal.className = acOn ? 'value ok' : 'value warn';
+
+    const interval = status.interval_minutes ?? 720;
+    intervalVal.textContent = `${interval}m (~${Math.round(interval / 60)}h)`;
+
+    lastAutoVal.textContent = fmtTime(status.last_auto_run);
+    nextAutoVal.textContent = fmtTime(status.next_auto_run);
   });
 
   // Load saved config into form
@@ -44,6 +66,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     const config = storage['insight_config'];
     if (config?.ingest_url) (document.getElementById('ingest-url') as HTMLInputElement).value = config.ingest_url;
     if (config?.ingest_token) (document.getElementById('ingest-token') as HTMLInputElement).value = config.ingest_token;
+    const intervalInput = document.getElementById('interval-minutes') as HTMLInputElement;
+    intervalInput.value = String(config?.interval_minutes ?? 720);
+  });
+
+  // Auto-capture toggle — save immediately without reopening the setup form
+  autoCaptureToggle.addEventListener('change', () => {
+    const enabled = autoCaptureToggle.checked;
+    autoCaptureVal.textContent = enabled ? 'ON' : 'OFF';
+    autoCaptureVal.className = enabled ? 'value ok' : 'value warn';
+
+    chrome.storage.local.get('insight_config', (storage) => {
+      const config = storage['insight_config'] ?? {};
+      chrome.runtime.sendMessage({
+        type: 'SAVE_CONFIG',
+        config: { ...config, auto_capture: enabled },
+      });
+    });
   });
 
   // Sync now
@@ -65,9 +104,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('save-btn')!.addEventListener('click', () => {
     const ingest_url = (document.getElementById('ingest-url') as HTMLInputElement).value.trim();
     const ingest_token = (document.getElementById('ingest-token') as HTMLInputElement).value.trim();
+    const rawInterval = parseInt((document.getElementById('interval-minutes') as HTMLInputElement).value, 10);
+    const interval_minutes = isNaN(rawInterval) || rawInterval < 180 ? 720 : rawInterval;
+
     chrome.runtime.sendMessage({
       type: 'SAVE_CONFIG',
-      config: { ingest_url, ingest_token, enabled: true }
+      config: {
+        ingest_url,
+        ingest_token,
+        enabled: true,
+        // auto_capture defaults to true when a token is first configured;
+        // worker.ts applies the default if the field is absent.
+        interval_minutes,
+      }
     }, () => {
       setupSection.classList.remove('visible');
       statusEl.textContent = 'CONFIGURED';
