@@ -2,9 +2,7 @@
 
 Open-source, self-hostable LinkedIn analytics. A privacy-first Shield alternative.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=REPLACE_WITH_REPO_URL)
-
-> **Note:** Replace `REPLACE_WITH_REPO_URL` in the deploy button above with your GitHub repo URL after pushing.
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/heymitch/signal)
 
 ---
 
@@ -13,12 +11,12 @@ Open-source, self-hostable LinkedIn analytics. A privacy-first Shield alternativ
 If you use Claude Code, Cursor, or Codex, you can have your agent do almost all of the setup for you. Copy the prompt below and paste it into your agent:
 
 ```
-Clone https://github.com/<your-org>/signal, then follow AGENTS.md to set it up
+Clone https://github.com/heymitch/signal, then follow AGENTS.md to set it up
 for me. Do everything you can via CLI and ask me only when you need a browser
 login or a manual Chrome extension step.
 ```
 
-Replace `<your-org>/signal` with the actual GitHub URL after you push this repo. The agent will handle dependency install, Supabase project creation, schema migrations, env vars, and optionally a Vercel deploy — stopping only to ask you for a browser login, a DB password choice, or a region selection.
+The agent will handle dependency install, Supabase project creation, schema migrations, env vars, and optionally a Vercel deploy — stopping only to ask you for a browser login, a DB password choice, or a region selection.
 
 ---
 
