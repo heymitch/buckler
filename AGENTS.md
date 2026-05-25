@@ -255,6 +255,22 @@ Tell the user:
 
 > Click the Signal extension icon in Chrome → open the popup → click "Configure" → paste the ingest URL and token → click "Save".
 
+#### 8e. Auto-capture (set-and-forget)
+
+Once a token is configured the extension **auto-captures on a schedule** — the user does not need to manually visit their analytics pages. While the browser is open and the user is logged into LinkedIn, the extension opens the analytics pages in a background tab on a jittered ~12-hour schedule (configurable down to a 180-minute minimum, adjustable in the popup). Default: **on**.
+
+Important constraints:
+- "Capture only sees the LinkedIn account currently logged into that browser." One browser session = one account.
+- Auto-capture only runs while the browser is open; it does not run in the background when Chrome is closed.
+- The extension uses the user's own session and IP — no credentials are stored and no server-side scraping occurs.
+
+#### 8f. Multi-account capture (ghostwriters / agencies)
+
+To track multiple LinkedIn accounts, use the per-profile ingest token (generated at `/signal/connect` for each profile). Two patterns:
+
+1. **Separate Chrome profile per client.** Run a Chrome profile logged into that client's LinkedIn, install the extension in that profile, and configure it with that client's ingest token. Each profile captures independently on its own schedule.
+2. **Client self-installs.** Share the client's ingest token with them; they install the extension on their own browser and paste in the token. Their captures flow into your shared multi-profile Signal dashboard — they need no Signal login of their own.
+
 ---
 
 ## Summary checklist

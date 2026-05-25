@@ -35,7 +35,7 @@ Shield Analytics is winding down. Signal is the self-hosted replacement — buil
 - **Magic-link auth** — Supabase email magic links. No passwords.
 - **Fully self-hostable** — deploy to Vercel or run locally. Your Supabase, your data.
 - **Signup lock** — set `SIGNAL_LOCK_SIGNUPS=true` to close registration after the owner signs up, keeping your instance private.
-- **Passive capture browser extension** — optional Chrome extension that captures live LinkedIn data without manual exports. Own-account-only; requires deploying the included Supabase edge function (`supabase/functions/ingest`). See AGENTS.md steps 2f and 8.
+- **Set-and-forget capture extension** — optional Chrome extension that auto-captures your LinkedIn analytics on a jittered ~12h schedule (configurable in the popup, 180-min minimum). Runs in your own browser, uses your own session and IP, stores no credentials — it just actively loads your own analytics pages on a timer, so treat it as a low-frequency, own-account convenience. Multi-account works by running the extension per logged-in account: either a separate Chrome profile per client (each with its own ingest token) or each client self-installs with their token and data flows into your shared dashboard. Requires deploying the included Supabase edge function (`supabase/functions/ingest`). See AGENTS.md steps 2f and 8.
 
 ---
 
