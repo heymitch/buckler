@@ -54,7 +54,7 @@ export function normalizeMetrics(data: unknown): NormalizedMetrics[] {
           let total = 0;
           for (const [type, field] of Object.entries(REACTION_MAP)) {
             const count = (reactions[type] as number) ?? 0;
-            (metrics as Record<string, unknown>)[field as string] = count;
+            (metrics as unknown as Record<string, unknown>)[field as string] = count;
             total += count;
           }
           metrics.reactions_total = e.totalReactionCount as number ?? total;
