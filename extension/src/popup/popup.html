@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { width: 300px; font-family: 'IBM Plex Mono', monospace; background: #0d1116; color: #f3eccb; padding: 16px; margin: 0; font-size: 12px; }
+    .title { color: #f3eccb; font-size: 14px; font-weight: bold; margin-bottom: 12px; letter-spacing: 0.1em; }
+    .status-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .label { color: rgba(243,236,203,0.5); }
+    .value { color: #f3eccb; }
+    .value.ok { color: #22c55e; }
+    .value.warn { color: #facc15; }
+    .value.err { color: #dc2625; }
+    .divider { border: none; border-top: 1px solid rgba(243,236,203,0.1); margin: 12px 0; }
+    .btn { width: 100%; padding: 8px; background: #facc15; color: #0d1116; border: none; font-family: inherit; font-weight: bold; cursor: pointer; letter-spacing: 0.1em; margin-top: 8px; }
+    .btn:hover { background: #dc2625; color: #f3eccb; }
+    .btn.secondary { background: transparent; color: #f3eccb; border: 1px solid rgba(243,236,203,0.3); margin-top: 4px; }
+    input { width: 100%; box-sizing: border-box; padding: 6px; background: rgba(243,236,203,0.05); border: 1px solid rgba(243,236,203,0.2); color: #f3eccb; font-family: inherit; font-size: 11px; margin-bottom: 6px; }
+    .setup-section { display: none; }
+    .setup-section.visible { display: block; }
+  </style>
+</head>
+<body>
+  <div class="title">◈ PROJECT INSIGHT</div>
+
+  <div id="status-view">
+    <div class="status-row"><span class="label">STATUS</span><span id="status-val" class="value">—</span></div>
+    <div class="status-row"><span class="label">PROFILE URN</span><span id="urn-val" class="value">—</span></div>
+    <div class="status-row"><span class="label">LAST SYNC</span><span id="sync-val" class="value">—</span></div>
+    <div class="status-row"><span class="label">QUEUE</span><span id="queue-val" class="value">—</span></div>
+    <div class="status-row"><span class="label">PAUSED</span><span id="pause-val" class="value">—</span></div>
+    <hr class="divider">
+    <button class="btn" id="sync-btn">SYNC NOW</button>
+    <button class="btn secondary" id="setup-toggle">CONFIGURE</button>
+  </div>
+
+  <div id="setup-section" class="setup-section">
+    <hr class="divider">
+    <div class="label" style="margin-bottom:6px">INGEST URL</div>
+    <input id="ingest-url" type="text" placeholder="https://xxx.supabase.co/functions/v1/li-ingest" />
+    <div class="label" style="margin-bottom:6px">BEARER TOKEN</div>
+    <input id="ingest-token" type="password" placeholder="your-secret-token" />
+    <button class="btn" id="save-btn">SAVE</button>
+    <button class="btn secondary" id="setup-cancel">CANCEL</button>
+  </div>
+
+  <script type="module" src="popup.ts"></script>
+</body>
+</html>
