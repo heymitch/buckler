@@ -1,35 +1,10 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-
-const MOCK_AUDIENCE = {
-  job_titles: [
-    { name: 'Founder / CEO', count: 1840 },
-    { name: 'Marketing Manager', count: 1210 },
-    { name: 'Content Creator', count: 980 },
-    { name: 'Consultant', count: 760 },
-    { name: 'Product Manager', count: 640 },
-    { name: 'Coach / Trainer', count: 520 },
-    { name: 'Sales Manager', count: 480 },
-    { name: 'Director', count: 410 },
-  ],
-  industries: [
-    { name: 'Technology', count: 2240 },
-    { name: 'Marketing & Advertising', count: 1480 },
-    { name: 'Professional Services', count: 1020 },
-    { name: 'Education', count: 820 },
-    { name: 'Media & Entertainment', count: 540 },
-    { name: 'Financial Services', count: 380 },
-  ],
-  locations: [
-    { name: 'United States', count: 3120 },
-    { name: 'United Kingdom', count: 640 },
-    { name: 'Canada', count: 580 },
-    { name: 'Australia', count: 420 },
-    { name: 'India', count: 360 },
-  ],
-};
+import { createClient } from '@/lib/supabase/client';
+import { getActiveProfileId, getAudienceData, type AudienceData } from '@/lib/signal-data';
 
 const SCAN_LINE = 'repeating-linear-gradient(to bottom, transparent 0px, transparent 4px, rgba(28,22,18,0.4) 4px, rgba(28,22,18,0.4) 5px)';
 
@@ -80,6 +55,36 @@ const NAV_LINKS = [
 ];
 
 export default function AudiencePage() {
+  const [data, setData] = useState<AudienceData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [empty, setEmpty] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const supabase = createClient();
+      const profileId = await getActiveProfileId(supabase);
+      if (cancelled) return;
+      if (!profileId) {
+        setEmpty(true);
+        setLoading(false);
+        return;
+      }
+      const d = await getAudienceData(supabase, profileId);
+      if (cancelled) return;
+      setData(d);
+      setEmpty(d.job_titles.length === 0 && d.industries.length === 0 && d.locations.length === 0);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const job_titles = data?.job_titles ?? [];
+  const industries = data?.industries ?? [];
+  const locations = data?.locations ?? [];
+
   return (
     <div style={{ background: '#16120E', minHeight: '100vh', color: '#F0E4D0', fontFamily: "'JetBrains Mono', monospace" }}>
       <nav style={{ background: '#100E0C', borderBottom: '1px solid #413226', padding: '16px 32px', display: 'flex', alignItems: 'center', gap: 32 }}>
@@ -94,14 +99,25 @@ export default function AudiencePage() {
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 32px' }}>
         <h1 style={{ fontSize: 24, fontWeight: 300, marginBottom: 32, fontFamily: "'Jura', sans-serif", color: '#F0E4D0' }}>Audience</h1>
 
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '80px 0', color: '#6E604E', fontFamily: "'Silkscreen', monospace", fontSize: 10, letterSpacing: '0.15em' }}>LOADING…</div>
+        )}
+
+        {!loading && empty && (
+          <div style={{ textAlign: 'center', padding: '80px 0', color: '#B4A690', fontFamily: "'JetBrains Mono', monospace", fontSize: 14 }}>
+            No data yet — import or connect to get started.
+          </div>
+        )}
+
+        {!loading && !empty && (<>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 24, marginBottom: 24 }}>
           {/* Job Titles */}
           <div style={{ ...panelStyle }}>
             <ScanOverlay />
             <PanelTitleBar title="TOP JOB TITLES" />
             <div style={{ padding: '20px 24px' }}>
-              {MOCK_AUDIENCE.job_titles.map(item => (
-                <HorizontalBar key={item.name} label={item.name} count={item.count} max={MOCK_AUDIENCE.job_titles[0].count} />
+              {job_titles.map(item => (
+                <HorizontalBar key={item.name} label={item.name} count={item.count} max={job_titles[0]?.count ?? 1} />
               ))}
             </div>
           </div>
@@ -112,7 +128,7 @@ export default function AudiencePage() {
             <PanelTitleBar title="TOP INDUSTRIES" />
             <div style={{ padding: '20px 24px' }}>
               <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={MOCK_AUDIENCE.industries} layout="vertical">
+                <BarChart data={industries} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(65,50,38,0.6)" horizontal={false} />
                   <XAxis type="number" tick={{ fill: '#6E604E', fontSize: 10, fontFamily: "'JetBrains Mono', monospace" }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" tick={{ fill: '#B4A690', fontSize: 11, fontFamily: "'JetBrains Mono', monospace" }} axisLine={false} tickLine={false} width={160} />
@@ -130,14 +146,15 @@ export default function AudiencePage() {
           <PanelTitleBar title="TOP LOCATIONS" />
           <div style={{ padding: '20px 24px' }}>
             <div style={{ maxWidth: 600 }}>
-              {MOCK_AUDIENCE.locations.map(item => (
-                <HorizontalBar key={item.name} label={item.name} count={item.count} max={MOCK_AUDIENCE.locations[0].count} />
+              {locations.map(item => (
+                <HorizontalBar key={item.name} label={item.name} count={item.count} max={locations[0]?.count ?? 1} />
               ))}
             </div>
           </div>
         </div>
+        </>)}
 
-        <div style={{ marginTop: 16, textAlign: 'right', fontSize: 8, color: '#6E604E', fontFamily: "'Silkscreen', monospace", letterSpacing: '0.1em' }}>⚠ MOCK DATA</div>
+        <div style={{ marginTop: 16, textAlign: 'right', fontSize: 8, color: '#6E604E', fontFamily: "'Silkscreen', monospace", letterSpacing: '0.1em' }}>◈ LIVE DATA</div>
       </div>
     </div>
   );

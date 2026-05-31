@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Deno edge-function deps (vendored locally)
+supabase/functions/node_modules/
+supabase/functions/deno.lock

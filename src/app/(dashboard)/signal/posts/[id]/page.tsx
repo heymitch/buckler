@@ -1,56 +1,10 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-
-const MOCK_POST = {
-  id: '1',
-  commentary: "The best AI tool nobody is talking about...\n\nEveryone is obsessed with ChatGPT and Claude. But the real leverage is in what you build on top of them.\n\nWe've been running Claude Cowork Bootcamp for 2 cohorts now. And the #1 thing that separates students who 10x their output from those who plateau?\n\nThey build .Skills.\n\nA .Skill is a saved, reusable workflow. You build it once. Claude runs it forever.\n\nThe tool? Cowork by Anthropic. The strategy? Save everything you do more than once.",
-  published: '2026-04-28',
-  type: 'text',
-  impressions: 24800,
-  engagement: 8.4,
-  reactions_total: 342,
-  reactions_like: 198,
-  reactions_celebrate: 67,
-  reactions_insightful: 48,
-  reactions_love: 29,
-  comments: 87,
-  reposts: 23,
-  clicks: 410,
-};
-
-const MOCK_IMPRESSION_CURVE = [
-  { h: '0h', impressions: 0 }, { h: '2h', impressions: 1200 },
-  { h: '6h', impressions: 4800 }, { h: '12h', impressions: 11200 },
-  { h: '24h', impressions: 17600 }, { h: '48h', impressions: 21900 },
-  { h: '72h', impressions: 23400 }, { h: '7d', impressions: 24400 },
-  { h: '14d', impressions: 24800 },
-];
-
-const MOCK_DEMOGRAPHICS = {
-  job_title: [
-    { value: 'Founder / CEO', pct: 28 },
-    { value: 'Marketing Manager', pct: 18 },
-    { value: 'Content Creator', pct: 14 },
-    { value: 'Consultant', pct: 11 },
-    { value: 'Product Manager', pct: 9 },
-  ],
-  industry: [
-    { value: 'Technology', pct: 34 },
-    { value: 'Marketing & Advertising', pct: 22 },
-    { value: 'Professional Services', pct: 16 },
-    { value: 'Education', pct: 12 },
-    { value: 'Media & Entertainment', pct: 8 },
-  ],
-  seniority: [
-    { value: 'Owner / Partner', pct: 31 },
-    { value: 'Senior', pct: 27 },
-    { value: 'Manager', pct: 19 },
-    { value: 'Director', pct: 13 },
-    { value: 'Entry', pct: 10 },
-  ],
-};
+import { createClient } from '@/lib/supabase/client';
+import { getActiveProfileId, getPostDetailData, type PostDetailData } from '@/lib/signal-data';
 
 const SCAN_LINE = 'repeating-linear-gradient(to bottom, transparent 0px, transparent 4px, rgba(28,22,18,0.4) 4px, rgba(28,22,18,0.4) 5px)';
 
@@ -73,12 +27,6 @@ function PanelTitleBar({ title }: { title: string }) {
     </div>
   );
 }
-
-const customTooltipStyle = {
-  background: '#1C1612', border: '1px solid #413226',
-  color: '#F0E4D0', fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
-  borderRadius: 2, padding: '8px 12px',
-};
 
 function ReactionBar({ label, count, total, color }: { label: string; count: number; total: number; color: string }) {
   const pct = total > 0 ? (count / total) * 100 : 0;
@@ -116,7 +64,54 @@ function DemoTable({ title, data }: { title: string; data: { value: string; pct:
 }
 
 export default function PostDetail() {
-  const p = MOCK_POST;
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
+  const [p, setP] = useState<PostDetailData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!id) return;
+      const supabase = createClient();
+      const profileId = await getActiveProfileId(supabase);
+      if (cancelled) return;
+      if (!profileId) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+      const d = await getPostDetailData(supabase, profileId, id);
+      if (cancelled) return;
+      if (!d) {
+        setNotFound(true);
+      } else {
+        setP(d);
+      }
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  if (loading || !p) {
+    return (
+      <div style={{ background: '#16120E', minHeight: '100vh', color: '#F0E4D0', fontFamily: "'JetBrains Mono', monospace" }}>
+        <nav style={{ background: '#100E0C', borderBottom: '1px solid #413226', padding: '16px 32px', display: 'flex', alignItems: 'center', gap: 24 }}>
+          <Link href="/signal" style={{ fontFamily: "'Silkscreen', monospace", fontSize: 10, color: '#6E604E', letterSpacing: '0.2em', textDecoration: 'none' }}>◈ SIGNAL</Link>
+          <span style={{ color: '#413226' }}>/</span>
+          <Link href="/signal/posts" style={{ color: '#6E604E', textDecoration: 'none', fontFamily: "'Silkscreen', monospace", fontSize: 9, letterSpacing: '0.15em' }}>POSTS</Link>
+          <span style={{ color: '#413226' }}>/</span>
+          <span style={{ color: '#E8682A', fontFamily: "'Silkscreen', monospace", fontSize: 9 }}>DETAIL</span>
+        </nav>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 32px', textAlign: 'center', color: '#B4A690', fontFamily: "'JetBrains Mono', monospace", fontSize: 14 }}>
+          {notFound ? 'Post not found.' : 'LOADING…'}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: '#16120E', minHeight: '100vh', color: '#F0E4D0', fontFamily: "'JetBrains Mono', monospace" }}>
@@ -145,28 +140,11 @@ export default function PostDetail() {
               </div>
             </div>
 
-            {/* Impression curve */}
-            <div style={{ ...panelStyle }}>
-              <ScanOverlay />
-              <PanelTitleBar title="IMPRESSION CURVE" />
-              <div style={{ padding: '20px 24px' }}>
-                <ResponsiveContainer width="100%" height={180}>
-                  <LineChart data={MOCK_IMPRESSION_CURVE}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(65,50,38,0.6)" />
-                    <XAxis dataKey="h" tick={{ fill: '#6E604E', fontSize: 10, fontFamily: "'JetBrains Mono', monospace" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: '#6E604E', fontSize: 10, fontFamily: "'JetBrains Mono', monospace" }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={customTooltipStyle} />
-                    <Line type="monotone" dataKey="impressions" stroke="#82C896" strokeWidth={2} dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Demographics */}
+            {/* Demographics (audience-level) */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-              <DemoTable title="JOB TITLES" data={MOCK_DEMOGRAPHICS.job_title} />
-              <DemoTable title="INDUSTRIES" data={MOCK_DEMOGRAPHICS.industry} />
-              <DemoTable title="SENIORITY" data={MOCK_DEMOGRAPHICS.seniority} />
+              <DemoTable title="JOB TITLES" data={p.demographics.job_title} />
+              <DemoTable title="INDUSTRIES" data={p.demographics.industry} />
+              <DemoTable title="LOCATIONS" data={p.demographics.location} />
             </div>
           </div>
 
@@ -177,7 +155,6 @@ export default function PostDetail() {
               { label: 'ENGAGEMENT RATE', value: `${p.engagement}%`, color: '#E8682A' },
               { label: 'COMMENTS', value: String(p.comments), color: '#F0E4D0' },
               { label: 'REPOSTS', value: String(p.reposts), color: '#F0E4D0' },
-              { label: 'CLICKS', value: String(p.clicks), color: '#F0E4D0' },
             ].map(({ label, value, color }) => (
               <div key={label} style={{ ...panelStyle }}>
                 <ScanOverlay />
@@ -193,16 +170,13 @@ export default function PostDetail() {
               <ScanOverlay />
               <PanelTitleBar title={`REACTIONS (${p.reactions_total})`} />
               <div style={{ padding: '16px 20px' }}>
-                <ReactionBar label="👍 Like" count={p.reactions_like} total={p.reactions_total} color="#FFB86C" />
-                <ReactionBar label="🎉 Celebrate" count={p.reactions_celebrate} total={p.reactions_total} color="#82C896" />
-                <ReactionBar label="💡 Insightful" count={p.reactions_insightful} total={p.reactions_total} color="#4A9DB8" />
-                <ReactionBar label="❤️ Love" count={p.reactions_love} total={p.reactions_total} color="#E8682A" />
+                <ReactionBar label="Total" count={p.reactions_total} total={p.reactions_total} color="#FFB86C" />
               </div>
             </div>
           </div>
         </div>
 
-        <div style={{ marginTop: 24, fontSize: 8, color: '#6E604E', fontFamily: "'Silkscreen', monospace", letterSpacing: '0.1em' }}>⚠ MOCK DATA</div>
+        <div style={{ marginTop: 24, fontSize: 8, color: '#6E604E', fontFamily: "'Silkscreen', monospace", letterSpacing: '0.1em' }}>◈ LIVE DATA</div>
       </div>
     </div>
   );

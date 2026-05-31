@@ -1,18 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-
-const MOCK_POSTS = [
-  { id: '1', snippet: 'The best AI tool nobody is talking about...', type: 'text', published: '2026-04-28', impressions: 24800, comments: 87, engagement: 8.4, reactions: 342 },
-  { id: '2', snippet: "I built a Chrome extension in 4 hours using Claude. Here's exactly how:", type: 'image', published: '2026-04-21', impressions: 19200, comments: 63, engagement: 7.1, reactions: 218 },
-  { id: '3', snippet: 'Stop using ChatGPT like a search engine. Do this instead:', type: 'text', published: '2026-05-02', impressions: 17600, comments: 54, engagement: 6.8, reactions: 196 },
-  { id: '4', snippet: "Most people are using AI wrong. The problem isn't the tool, it's the workflow.", type: 'text', published: '2026-04-14', impressions: 15300, comments: 41, engagement: 5.9, reactions: 167 },
-  { id: '5', snippet: "The Claude Cowork Bootcamp just wrapped. Here's what I learned from 200 students:", type: 'image', published: '2026-04-17', impressions: 12900, comments: 39, engagement: 5.2, reactions: 143 },
-  { id: '6', snippet: 'Hot take: prompt engineering is already becoming obsolete.', type: 'text', published: '2026-04-10', impressions: 11200, comments: 72, engagement: 7.8, reactions: 201 },
-  { id: '7', snippet: 'The #1 thing holding most people back from using AI well:', type: 'text', published: '2026-04-07', impressions: 9800, comments: 28, engagement: 4.6, reactions: 118 },
-  { id: '8', snippet: "I analyzed 500 AI-written posts. Here's what makes them obvious (and how to fix it):", type: 'document', published: '2026-04-03', impressions: 8700, comments: 33, engagement: 4.1, reactions: 99 },
-];
+import { createClient } from '@/lib/supabase/client';
+import { getActiveProfileId, getPostsData, type PostRow } from '@/lib/signal-data';
 
 const SCAN_LINE = 'repeating-linear-gradient(to bottom, transparent 0px, transparent 4px, rgba(28,22,18,0.4) 4px, rgba(28,22,18,0.4) 5px)';
 
@@ -29,13 +20,38 @@ export default function PostsPage() {
   const [sort, setSort] = useState<SortKey>('impressions');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [filter, setFilter] = useState('');
+  const [allPosts, setAllPosts] = useState<PostRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [empty, setEmpty] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const supabase = createClient();
+      const profileId = await getActiveProfileId(supabase);
+      if (cancelled) return;
+      if (!profileId) {
+        setEmpty(true);
+        setLoading(false);
+        return;
+      }
+      const rows = await getPostsData(supabase, profileId);
+      if (cancelled) return;
+      setAllPosts(rows);
+      setEmpty(rows.length === 0);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function handleSort(key: SortKey) {
     if (sort === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
     else { setSort(key); setSortDir('desc'); }
   }
 
-  const posts = [...MOCK_POSTS]
+  const posts = [...allPosts]
     .filter(p => !filter || p.snippet.toLowerCase().includes(filter.toLowerCase()))
     .sort((a, b) => {
       const av = sort === 'published' ? a.published : (a[sort] as number);
@@ -93,7 +109,14 @@ export default function PostsPage() {
               </tr>
             </thead>
             <tbody>
-              {posts.map(post => (
+              {(loading || empty) && (
+                <tr>
+                  <td colSpan={7} style={{ padding: '40px 12px', textAlign: 'center', color: '#B4A690', fontFamily: "'JetBrains Mono', monospace", fontSize: 13 }}>
+                    {loading ? 'LOADING…' : 'No data yet — import or connect to get started.'}
+                  </td>
+                </tr>
+              )}
+              {!loading && !empty && posts.map(post => (
                 <tr key={post.id} style={{ borderBottom: '1px solid rgba(65,50,38,0.5)', cursor: 'pointer' }}
                   onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = 'rgba(55,43,32,0.4)'}
                   onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}>
@@ -115,7 +138,7 @@ export default function PostsPage() {
             </tbody>
           </table>
         </div>
-        <div style={{ marginTop: 12, textAlign: 'right', fontSize: 8, color: '#6E604E', fontFamily: "'Silkscreen', monospace", letterSpacing: '0.1em' }}>⚠ MOCK DATA</div>
+        <div style={{ marginTop: 12, textAlign: 'right', fontSize: 8, color: '#6E604E', fontFamily: "'Silkscreen', monospace", letterSpacing: '0.1em' }}>◈ LIVE DATA</div>
       </div>
     </div>
   );

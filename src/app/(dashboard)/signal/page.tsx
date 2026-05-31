@@ -1,35 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from 'recharts';
-
-// ─── Mock data ─────────────────────────────────────────────
-const MOCK_FOLLOWER_GROWTH = [
-  { date: 'Mar 10', followers: 4820 }, { date: 'Mar 17', followers: 4934 },
-  { date: 'Mar 24', followers: 5102 }, { date: 'Mar 31', followers: 5289 },
-  { date: 'Apr 7', followers: 5441 }, { date: 'Apr 14', followers: 5618 },
-  { date: 'Apr 21', followers: 5790 }, { date: 'Apr 28', followers: 5944 },
-  { date: 'May 5', followers: 6103 },
-];
-
-const MOCK_POSTS_PER_WEEK = [
-  { week: 'Mar W1', posts: 3 }, { week: 'Mar W2', posts: 5 },
-  { week: 'Mar W3', posts: 4 }, { week: 'Mar W4', posts: 6 },
-  { week: 'Apr W1', posts: 4 }, { week: 'Apr W2', posts: 7 },
-  { week: 'Apr W3', posts: 5 }, { week: 'Apr W4', posts: 6 },
-  { week: 'May W1', posts: 4 },
-];
-
-const MOCK_TOP_POSTS = [
-  { id: '1', snippet: 'The best AI tool nobody is talking about...', impressions: 24800, engagement: 8.4, published: '2026-04-28' },
-  { id: '2', snippet: "I built a Chrome extension in 4 hours using Claude. Here's exactly how:", impressions: 19200, engagement: 7.1, published: '2026-04-21' },
-  { id: '3', snippet: 'Stop using ChatGPT like a search engine. Do this instead:', impressions: 17600, engagement: 6.8, published: '2026-05-02' },
-  { id: '4', snippet: "Most people are using AI wrong. The problem isn't the tool...", impressions: 15300, engagement: 5.9, published: '2026-04-14' },
-  { id: '5', snippet: 'The Claude Cowork Bootcamp just wrapped. Here\'s what I learned:', impressions: 12900, engagement: 5.2, published: '2026-04-17' },
-];
+import { createClient } from '@/lib/supabase/client';
+import { getActiveProfileId, getOverviewData, type OverviewData } from '@/lib/signal-data';
 
 // ─── Shared styles ────────────────────────────────────────
 const SCAN_LINE = 'repeating-linear-gradient(to bottom, transparent 0px, transparent 4px, rgba(28,22,18,0.4) 4px, rgba(28,22,18,0.4) 5px)';
@@ -82,8 +59,57 @@ const NAV_LINKS = [
   { href: '/signal/health', label: 'HEALTH' },
 ];
 
+function formatK(n: number): string {
+  if (n >= 1000) return `${Math.round(n / 100) / 10}K`;
+  return String(n);
+}
+
 export default function SignalOverview() {
   const [range, setRange] = useState<'30' | '60' | '90'>('30');
+  const [data, setData] = useState<OverviewData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [empty, setEmpty] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const supabase = createClient();
+      const profileId = await getActiveProfileId(supabase);
+      if (cancelled) return;
+      if (!profileId) {
+        setEmpty(true);
+        setLoading(false);
+        return;
+      }
+      const d = await getOverviewData(supabase, profileId);
+      if (cancelled) return;
+      setData(d);
+      setEmpty(d.followerGrowth.length === 0 && d.topPosts.length === 0);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const followerGrowth = data?.followerGrowth ?? [];
+  const postsPerWeek = data?.postsPerWeek ?? [];
+  const topPosts = data?.topPosts ?? [];
+
+  const postsForRange =
+    range === '30' ? data?.postsLast30 : range === '60' ? data?.postsLast60 : data?.postsLast90;
+  const impressionsForRange =
+    range === '30'
+      ? data?.impressionsLast30
+      : range === '60'
+        ? data?.impressionsLast60
+        : data?.impressionsLast90;
+  const deltaForRange =
+    range === '30'
+      ? data?.impressionsDeltaPct30
+      : range === '60'
+        ? data?.impressionsDeltaPct60
+        : data?.impressionsDeltaPct90;
 
   return (
     <div style={{ background: '#16120E', minHeight: '100vh', color: '#F0E4D0', fontFamily: "'JetBrains Mono', monospace" }}>
@@ -110,12 +136,25 @@ export default function SignalOverview() {
       </nav>
 
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 32px' }}>
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '80px 0', color: '#6E604E', fontFamily: "'Silkscreen', monospace", fontSize: 10, letterSpacing: '0.15em' }}>
+            LOADING…
+          </div>
+        )}
+
+        {!loading && empty && (
+          <div style={{ textAlign: 'center', padding: '80px 0', color: '#B4A690', fontFamily: "'JetBrains Mono', monospace", fontSize: 14 }}>
+            No data yet — import or connect to get started.
+          </div>
+        )}
+
+        {!loading && !empty && (<>
         {/* Stat cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 40 }}>
-          <StatCard label="TOTAL FOLLOWERS" value="6,103" sub="+1,283 last 90d" />
-          <StatCard label={`POSTS LAST ${range}D`} value="32" />
-          <StatCard label={`IMPRESSIONS LAST ${range}D`} value="284K" sub="+18% vs prior period" color="#FFB86C" />
-          <StatCard label="AVG ENGAGEMENT" value="5.8%" sub="last 30 posts" color="#E8682A" />
+          <StatCard label="TOTAL FOLLOWERS" value={(data?.totalFollowers ?? 0).toLocaleString()} sub={`+${(data?.followerDelta90d ?? 0).toLocaleString()} last 90d`} />
+          <StatCard label={`POSTS LAST ${range}D`} value={String(postsForRange ?? 0)} />
+          <StatCard label={`IMPRESSIONS LAST ${range}D`} value={formatK(impressionsForRange ?? 0)} sub={`${(deltaForRange ?? 0) >= 0 ? '+' : ''}${deltaForRange ?? 0}% vs prior period`} color="#FFB86C" />
+          <StatCard label="AVG ENGAGEMENT" value={`${data?.avgEngagementLast30 ?? 0}%`} sub="last 30 posts" color="#E8682A" />
         </div>
 
         {/* Charts row */}
@@ -126,7 +165,7 @@ export default function SignalOverview() {
             <PanelTitleBar title="FOLLOWER GROWTH" />
             <div style={{ padding: '20px 24px' }}>
               <ResponsiveContainer width="100%" height={200}>
-                <LineChart data={MOCK_FOLLOWER_GROWTH}>
+                <LineChart data={followerGrowth}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(65,50,38,0.6)" />
                   <XAxis dataKey="date" tick={{ fill: '#6E604E', fontSize: 10, fontFamily: "'JetBrains Mono', monospace" }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: '#6E604E', fontSize: 10, fontFamily: "'JetBrains Mono', monospace" }} axisLine={false} tickLine={false} domain={['auto', 'auto']} />
@@ -143,7 +182,7 @@ export default function SignalOverview() {
             <PanelTitleBar title="POSTS / WEEK" />
             <div style={{ padding: '20px 24px' }}>
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={MOCK_POSTS_PER_WEEK}>
+                <BarChart data={postsPerWeek}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(65,50,38,0.6)" />
                   <XAxis dataKey="week" tick={{ fill: '#6E604E', fontSize: 9, fontFamily: "'JetBrains Mono', monospace" }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: '#6E604E', fontSize: 10, fontFamily: "'JetBrains Mono', monospace" }} axisLine={false} tickLine={false} />
@@ -169,7 +208,7 @@ export default function SignalOverview() {
                 </tr>
               </thead>
               <tbody>
-                {MOCK_TOP_POSTS.map(post => (
+                {topPosts.map(post => (
                   <tr key={post.id} style={{ borderBottom: '1px solid rgba(65,50,38,0.5)' }}>
                     <td style={{ padding: '12px 12px', color: '#F0E4D0', maxWidth: 400 }}>
                       <Link href={`/signal/posts/${post.id}`} style={{ color: '#F0E4D0', textDecoration: 'none' }}>
@@ -189,8 +228,9 @@ export default function SignalOverview() {
         </div>
 
         <div style={{ marginTop: 16, textAlign: 'right', fontSize: 8, color: '#6E604E', fontFamily: "'Silkscreen', monospace", letterSpacing: '0.1em' }}>
-          ⚠ MOCK DATA — connect Supabase to see live analytics
+          ◈ LIVE DATA
         </div>
+        </>)}
       </div>
     </div>
   );

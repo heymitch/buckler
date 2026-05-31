@@ -2,11 +2,11 @@
 --   psql <conn> -f supabase/seed-demo.sql  OR paste into Supabase SQL editor.
 
 -- ── Idempotent reset ───────────────────────────────────────────────────────────
-delete from profiles where name = 'Demo Creator';
+delete from signal_profiles where name = 'Demo Creator';
 
 -- ── Insert profile ─────────────────────────────────────────────────────────────
 with new_profile as (
-  insert into profiles (owner_user_id, li_urn, name, headline)
+  insert into signal_profiles (owner_user_id, li_urn, name, headline)
   values (
     (select id from auth.users order by created_at limit 1),
     'urn:li:person:demoCreator123',
@@ -18,7 +18,7 @@ with new_profile as (
 
 -- ── Insert posts ───────────────────────────────────────────────────────────────
 new_posts as (
-  insert into posts (
+  insert into signal_posts (
     profile_id, li_post_urn, text, published_at, post_type,
     impressions, members_reached, reactions, comments, reposts, shares,
     engagement_rate, profile_views, followers_gained, saves, sends, source
@@ -51,7 +51,7 @@ new_posts as (
 
 -- ── Insert follower snapshots ──────────────────────────────────────────────────
 new_snapshots as (
-  insert into follower_snapshots (profile_id, date, follower_count)
+  insert into signal_follower_snapshots (profile_id, date, follower_count)
   select
     p.id,
     d.snap_date::date,
@@ -74,7 +74,7 @@ new_snapshots as (
 )
 
 -- ── Insert audience demographics ───────────────────────────────────────────────
-insert into audience_demographics (profile_id, dimension, value, count)
+insert into signal_audience_demographics (profile_id, dimension, value, count)
 select p.id, d.dimension, d.value, d.count
 from new_profile p
 cross join (values

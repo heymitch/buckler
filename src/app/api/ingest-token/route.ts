@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   const { profileId, label } = await req.json();
   if (!profileId) return NextResponse.json({ error: 'profileId required' }, { status: 400 });
   // TODO: generate Supabase types
-  const { data, error } = await supabase.from('ingest_tokens')
+  const { data, error } = await supabase.from('signal_ingest_tokens')
     .insert({ owner_user_id: user.id, profile_id: profileId, label } as any)
     .select('token').single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -22,7 +22,7 @@ export async function DELETE(req: Request) {
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { token } = await req.json();
   // TODO: generate Supabase types
-  const { error } = await supabase.from('ingest_tokens').delete().eq('token', token as any);
+  const { error } = await supabase.from('signal_ingest_tokens').delete().eq('token', token as any);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

@@ -51,7 +51,7 @@ export default function ConnectPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.from('profiles').select('id,name').order('name').then(({ data }) => {
+    supabase.from('signal_profiles').select('id,name').order('name').then(({ data }) => {
       const rows = (data ?? []) as Profile[];
       setProfiles(rows);
       if (rows.length > 0) setProfileId(rows[0].id);
