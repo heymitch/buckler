@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { createClient } from '@/lib/supabase/client';
-import { getActiveProfileId, getAudienceData, type AudienceData } from '@/lib/signal-data';
+import { getActiveProfileId, getAudienceData, type AudienceData } from '@/lib/buckler-data';
 
 const SCAN_LINE = 'repeating-linear-gradient(to bottom, transparent 0px, transparent 4px, rgba(28,22,18,0.4) 4px, rgba(28,22,18,0.4) 5px)';
 
@@ -48,10 +48,10 @@ function HorizontalBar({ label, count, max }: { label: string; count: number; ma
 }
 
 const NAV_LINKS = [
-  { href: '/signal', label: 'OVERVIEW' },
-  { href: '/signal/posts', label: 'POSTS' },
-  { href: '/signal/audience', label: 'AUDIENCE' },
-  { href: '/signal/health', label: 'HEALTH' },
+  { href: '/buckler', label: 'OVERVIEW' },
+  { href: '/buckler/posts', label: 'POSTS' },
+  { href: '/buckler/audience', label: 'AUDIENCE' },
+  { href: '/buckler/health', label: 'HEALTH' },
 ];
 
 export default function AudiencePage() {
@@ -88,10 +88,10 @@ export default function AudiencePage() {
   return (
     <div style={{ background: '#16120E', minHeight: '100vh', color: '#F0E4D0', fontFamily: "'JetBrains Mono', monospace" }}>
       <nav style={{ background: '#100E0C', borderBottom: '1px solid #413226', padding: '16px 32px', display: 'flex', alignItems: 'center', gap: 32 }}>
-        <Link href="/signal" style={{ fontFamily: "'Silkscreen', monospace", fontSize: 10, color: '#6E604E', letterSpacing: '0.2em', textDecoration: 'none' }}>◈ SIGNAL</Link>
+        <Link href="/buckler" style={{ fontFamily: "'Silkscreen', monospace", fontSize: 10, color: '#6E604E', letterSpacing: '0.2em', textDecoration: 'none' }}>◈ BUCKLER</Link>
         <div style={{ display: 'flex', gap: 24 }}>
           {NAV_LINKS.map(({ href, label }) => (
-            <Link key={href} href={href} style={{ color: href === '/signal/audience' ? '#E8682A' : '#6E604E', textDecoration: 'none', fontFamily: "'Silkscreen', monospace", fontSize: 9, letterSpacing: '0.15em' }}>{label}</Link>
+            <Link key={href} href={href} style={{ color: href === '/buckler/audience' ? '#E8682A' : '#6E604E', textDecoration: 'none', fontFamily: "'Silkscreen', monospace", fontSize: 9, letterSpacing: '0.15em' }}>{label}</Link>
           ))}
         </div>
       </nav>

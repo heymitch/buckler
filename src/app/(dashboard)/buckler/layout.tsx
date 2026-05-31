@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Signal',
+  title: 'Buckler',
   robots: 'noindex, nofollow',
 };
 
-export default function SignalLayout({ children }: { children: React.ReactNode }) {
+export default function BucklerLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <link rel="preconnect" href="https://fonts.googleapis.com" />

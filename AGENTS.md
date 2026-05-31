@@ -6,11 +6,11 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ---
 
-# Signal — Agent Setup Runbook
+# Buckler — Agent Setup Runbook
 
-## You are setting up Signal
+## You are setting up Buckler
 
-Signal is an open-source, self-hostable LinkedIn analytics dashboard (Next.js + Supabase). Users bring their own data via file import; nothing touches external servers.
+Buckler is an open-source, self-hostable LinkedIn analytics dashboard (Next.js + Supabase). Users bring their own data via file import; nothing touches external servers.
 
 ---
 
@@ -69,7 +69,7 @@ npx supabase login
 #### 2b. Create a project (skip if linking an existing one)
 
 Ask the user:
-1. "What should the project be named?" (e.g. `signal`)
+1. "What should the project be named?" (e.g. `buckler`)
 2. "Choose a database password — use a strong one (16+ chars). You will need this again if prompted."
 3. "Choose a region closest to you." Available regions: `us-east-1`, `us-west-2`, `eu-west-1`, `eu-central-1`, `ap-southeast-1`, `ap-northeast-1`, and others. Run `npx supabase projects create --help` to see the full list.
 
@@ -155,10 +155,10 @@ NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key-from-step-2e>
 
 # Set to "true" to disable new signups after the owner registers (private instance)
-SIGNAL_LOCK_SIGNUPS=false
+BUCKLER_LOCK_SIGNUPS=false
 ```
 
-Ask the user: "Do you want to lock signups so only you can use this instance? (yes/no)". If yes, set `SIGNAL_LOCK_SIGNUPS=true`.
+Ask the user: "Do you want to lock signups so only you can use this instance? (yes/no)". If yes, set `BUCKLER_LOCK_SIGNUPS=true`.
 
 Verify the file was written and contains both `NEXT_PUBLIC_` vars before continuing.
 
@@ -215,7 +215,7 @@ Once signed in, guide the user to:
    - **LinkedIn XLSX** — from LinkedIn: Profile → Settings → Analytics → Export post analytics. Choose up to 365 days. The file arrives as `.xlsx`.
 4. Click "Import".
 
-**Expected:** a success toast showing the number of rows imported. The dashboard at `/signal` should now show data.
+**Expected:** a success toast showing the number of rows imported. The dashboard at `/buckler` should now show data.
 
 ---
 
@@ -247,13 +247,13 @@ Tell the user:
 
 Tell the user:
 
-> In the Signal app, go to `/signal/connect` and click "Generate ingest token". Copy the ingest URL and token shown on screen.
+> In the Buckler app, go to `/buckler/connect` and click "Generate ingest token". Copy the ingest URL and token shown on screen.
 
 #### 8d. Configure the extension (human)
 
 Tell the user:
 
-> Click the Signal extension icon in Chrome → open the popup → click "Configure" → paste the ingest URL and token → click "Save".
+> Click the Buckler extension icon in Chrome → open the popup → click "Configure" → paste the ingest URL and token → click "Save".
 
 #### 8e. Auto-capture (set-and-forget)
 
@@ -266,10 +266,10 @@ Important constraints:
 
 #### 8f. Multi-account capture (ghostwriters / agencies)
 
-To track multiple LinkedIn accounts, use the per-profile ingest token (generated at `/signal/connect` for each profile). Two patterns:
+To track multiple LinkedIn accounts, use the per-profile ingest token (generated at `/buckler/connect` for each profile). Two patterns:
 
 1. **Separate Chrome profile per client.** Run a Chrome profile logged into that client's LinkedIn, install the extension in that profile, and configure it with that client's ingest token. Each profile captures independently on its own schedule.
-2. **Client self-installs.** Share the client's ingest token with them; they install the extension on their own browser and paste in the token. Their captures flow into your shared multi-profile Signal dashboard — they need no Signal login of their own.
+2. **Client self-installs.** Share the client's ingest token with them; they install the extension on their own browser and paste in the token. Their captures flow into your shared multi-profile Buckler dashboard — they need no Buckler login of their own.
 
 ---
 

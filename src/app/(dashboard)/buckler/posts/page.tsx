@@ -3,17 +3,17 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { getActiveProfileId, getPostsData, type PostRow } from '@/lib/signal-data';
+import { getActiveProfileId, getPostsData, type PostRow } from '@/lib/buckler-data';
 
 const SCAN_LINE = 'repeating-linear-gradient(to bottom, transparent 0px, transparent 4px, rgba(28,22,18,0.4) 4px, rgba(28,22,18,0.4) 5px)';
 
 type SortKey = 'published' | 'impressions' | 'engagement' | 'comments' | 'reactions';
 
 const NAV_LINKS = [
-  { href: '/signal', label: 'OVERVIEW' },
-  { href: '/signal/posts', label: 'POSTS' },
-  { href: '/signal/audience', label: 'AUDIENCE' },
-  { href: '/signal/health', label: 'HEALTH' },
+  { href: '/buckler', label: 'OVERVIEW' },
+  { href: '/buckler/posts', label: 'POSTS' },
+  { href: '/buckler/audience', label: 'AUDIENCE' },
+  { href: '/buckler/health', label: 'HEALTH' },
 ];
 
 export default function PostsPage() {
@@ -70,10 +70,10 @@ export default function PostsPage() {
   return (
     <div style={{ background: '#16120E', minHeight: '100vh', color: '#F0E4D0', fontFamily: "'JetBrains Mono', monospace" }}>
       <nav style={{ background: '#100E0C', borderBottom: '1px solid #413226', padding: '16px 32px', display: 'flex', alignItems: 'center', gap: 32 }}>
-        <Link href="/signal" style={{ fontFamily: "'Silkscreen', monospace", fontSize: 10, color: '#6E604E', letterSpacing: '0.2em', textDecoration: 'none' }}>◈ SIGNAL</Link>
+        <Link href="/buckler" style={{ fontFamily: "'Silkscreen', monospace", fontSize: 10, color: '#6E604E', letterSpacing: '0.2em', textDecoration: 'none' }}>◈ BUCKLER</Link>
         <div style={{ display: 'flex', gap: 24 }}>
           {NAV_LINKS.map(({ href, label }) => (
-            <Link key={href} href={href} style={{ color: href === '/signal/posts' ? '#E8682A' : '#6E604E', textDecoration: 'none', fontFamily: "'Silkscreen', monospace", fontSize: 9, letterSpacing: '0.15em' }}>{label}</Link>
+            <Link key={href} href={href} style={{ color: href === '/buckler/posts' ? '#E8682A' : '#6E604E', textDecoration: 'none', fontFamily: "'Silkscreen', monospace", fontSize: 9, letterSpacing: '0.15em' }}>{label}</Link>
           ))}
         </div>
       </nav>
@@ -121,7 +121,7 @@ export default function PostsPage() {
                   onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = 'rgba(55,43,32,0.4)'}
                   onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}>
                   <td style={{ padding: '14px 12px', maxWidth: 340 }}>
-                    <Link href={`/signal/posts/${post.id}`} style={{ color: '#F0E4D0', textDecoration: 'none', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}>
+                    <Link href={`/buckler/posts/${post.id}`} style={{ color: '#F0E4D0', textDecoration: 'none', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}>
                       {post.snippet}
                     </Link>
                   </td>

@@ -32,12 +32,12 @@ export async function POST(req: Request) {
   }));
 
   // TODO: generate Supabase types
-  const { error } = await supabase.from('signal_posts')
+  const { error } = await supabase.from('buckler_posts')
     .upsert(payload as any, { onConflict: 'profile_id,li_post_urn' });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   // TODO: generate Supabase types
-  await supabase.from('signal_imports').insert({
+  await supabase.from('buckler_imports').insert({
     owner_user_id: user.id, profile_id: profileId, source,
     filename: file.name, rows_imported: payload.length,
   } as any);

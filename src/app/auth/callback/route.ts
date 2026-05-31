@@ -7,5 +7,5 @@ export async function GET(req: Request) {
     const supabase = await createClient();
     await supabase.auth.exchangeCodeForSession(code);
   }
-  return NextResponse.redirect(`${url.origin}/signal`);
+  return NextResponse.redirect(`${url.origin}/buckler`);
 }

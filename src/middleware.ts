@@ -11,4 +11,4 @@ export async function middleware(req: NextRequest) {
   if (!user) return NextResponse.redirect(new URL('/auth/login', req.url));
   return res;
 }
-export const config = { matcher: ['/signal/:path*', '/import/:path*'] };
+export const config = { matcher: ['/buckler/:path*', '/import/:path*'] };

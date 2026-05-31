@@ -1,8 +1,8 @@
-# Signal
+# Buckler
 
 Open-source, self-hostable LinkedIn analytics. A privacy-first Shield alternative.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/heymitch/signal)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/heymitch/buckler)
 
 ---
 
@@ -11,7 +11,7 @@ Open-source, self-hostable LinkedIn analytics. A privacy-first Shield alternativ
 If you use Claude Code, Cursor, or Codex, you can have your agent do almost all of the setup for you. Copy the prompt below and paste it into your agent:
 
 ```
-Clone https://github.com/heymitch/signal, then follow AGENTS.md to set it up
+Clone https://github.com/heymitch/buckler, then follow AGENTS.md to set it up
 for me. Do everything you can via CLI and ask me only when you need a browser
 login or a manual Chrome extension step.
 ```
@@ -22,7 +22,7 @@ The agent will handle dependency install, Supabase project creation, schema migr
 
 ## Why
 
-Shield Analytics is winding down. Signal is the self-hosted replacement — built on file imports (bring your own data), so there is no scraping, no ToS risk, and no third-party servers touching your data. You connect your own Supabase project; your analytics live there and nowhere else.
+Shield Analytics is winding down. Buckler is the self-hosted replacement — built on file imports (bring your own data), so there is no scraping, no ToS risk, and no third-party servers touching your data. You connect your own Supabase project; your analytics live there and nowhere else.
 
 ---
 
@@ -34,7 +34,7 @@ Shield Analytics is winding down. Signal is the self-hosted replacement — buil
 - **LinkedIn official XLSX import** — LinkedIn's own creator-analytics export (up to 365 days). No scraping.
 - **Magic-link auth** — Supabase email magic links. No passwords.
 - **Fully self-hostable** — deploy to Vercel or run locally. Your Supabase, your data.
-- **Signup lock** — set `SIGNAL_LOCK_SIGNUPS=true` to close registration after the owner signs up, keeping your instance private.
+- **Signup lock** — set `BUCKLER_LOCK_SIGNUPS=true` to close registration after the owner signs up, keeping your instance private.
 - **Set-and-forget capture extension** — optional Chrome extension that auto-captures your LinkedIn analytics on a jittered ~12h schedule (configurable in the popup, 180-min minimum). Runs in your own browser, uses your own session and IP, stores no credentials — it just actively loads your own analytics pages on a timer, so treat it as a low-frequency, own-account convenience. Multi-account works by running the extension per logged-in account: either a separate Chrome profile per client (each with its own ingest token) or each client self-installs with their token and data flows into your shared dashboard. Requires deploying the included Supabase edge function (`supabase/functions/ingest`). See AGENTS.md steps 2f and 8.
 
 ---
@@ -45,8 +45,8 @@ Shield Analytics is winding down. Signal is the self-hosted replacement — buil
 
 2. **Clone this repo and install dependencies.**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/signal.git
-   cd signal
+   git clone https://github.com/YOUR_USERNAME/buckler.git
+   cd buckler
    npm install
    ```
 
@@ -67,7 +67,7 @@ Shield Analytics is winding down. Signal is the self-hosted replacement — buil
    NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
 
    # Optional: set to true to disable new signups after you register
-   SIGNAL_LOCK_SIGNUPS=true
+   BUCKLER_LOCK_SIGNUPS=true
    ```
 
 5. **Deploy or run locally.**
@@ -94,7 +94,7 @@ LinkedIn → your profile → Settings → Analytics → Export post analytics. 
 1. Go to `/import`.
 2. Select the source: **Shield CSV** or **LinkedIn XLSX**.
 3. Choose the profile to import into.
-4. Upload the file. Signal processes it client-side and writes records to your Supabase database.
+4. Upload the file. Buckler processes it client-side and writes records to your Supabase database.
 
 ---
 
@@ -107,7 +107,7 @@ LinkedIn → your profile → Settings → Analytics → Export post analytics. 
 
 ## Privacy
 
-Signal is import-based. There is no scraping, no browser automation against LinkedIn, and no external API calls for your data. When you self-host, every record lives in the Supabase project you created — no data ever touches this project's infrastructure or anyone else's.
+Buckler is import-based. There is no scraping, no browser automation against LinkedIn, and no external API calls for your data. When you self-host, every record lives in the Supabase project you created — no data ever touches this project's infrastructure or anyone else's.
 
 ---
 

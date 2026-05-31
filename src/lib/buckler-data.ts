@@ -1,4 +1,4 @@
-// Client-safe data-access layer for the Signal dashboard.
+// Client-safe data-access layer for the Buckler dashboard.
 // Each loader returns data in the EXACT shape the page's former MOCK constant used,
 // so wiring is a mechanical swap. Loaders take (supabase, profileId).
 
@@ -132,7 +132,7 @@ function bucketPostsPerWeek(publishedDates: string[]): PostsPerWeekPoint[] {
 // ─── Active profile ──────────────────────────────────────────────────────────────
 export async function getActiveProfileId(supabase: SupabaseClient): Promise<string | null> {
   const { data, error } = await supabase
-    .from('signal_profiles')
+    .from('buckler_profiles')
     .select('id')
     .order('created_at', { ascending: true })
     .limit(1);
@@ -147,12 +147,12 @@ export async function getOverviewData(
 ): Promise<OverviewData> {
   const [snapsRes, postsRes] = await Promise.all([
     supabase
-      .from('signal_follower_snapshots')
+      .from('buckler_follower_snapshots')
       .select('date, follower_count')
       .eq('profile_id', profileId)
       .order('date', { ascending: true }),
     supabase
-      .from('signal_posts')
+      .from('buckler_posts')
       .select('id, text, published_at, impressions, engagement_rate')
       .eq('profile_id', profileId)
       .order('published_at', { ascending: true }),
@@ -264,7 +264,7 @@ export async function getPostsData(
   profileId: string,
 ): Promise<PostRow[]> {
   const { data } = await supabase
-    .from('signal_posts')
+    .from('buckler_posts')
     .select('id, text, post_type, published_at, impressions, comments, engagement_rate, reactions')
     .eq('profile_id', profileId)
     .order('impressions', { ascending: false });
@@ -298,7 +298,7 @@ export async function getAudienceData(
   profileId: string,
 ): Promise<AudienceData> {
   const { data } = await supabase
-    .from('signal_audience_demographics')
+    .from('buckler_audience_demographics')
     .select('dimension, value, count')
     .eq('profile_id', profileId)
     .order('count', { ascending: false });
@@ -323,7 +323,7 @@ export async function getPostDetailData(
   postId: string,
 ): Promise<PostDetailData | null> {
   const { data, error } = await supabase
-    .from('signal_posts')
+    .from('buckler_posts')
     .select(
       'id, text, post_type, published_at, impressions, engagement_rate, reactions, comments, reposts',
     )
@@ -346,7 +346,7 @@ export async function getPostDetailData(
 
   // Profile-level demographics as a stand-in for per-post demographics (schema has no per-post dim).
   const { data: demoRows } = await supabase
-    .from('signal_audience_demographics')
+    .from('buckler_audience_demographics')
     .select('dimension, value, count')
     .eq('profile_id', profileId)
     .order('count', { ascending: false });
@@ -386,7 +386,7 @@ export async function getHealthData(
 ): Promise<HealthData> {
   // Derive a capture event log from recent posts (source + captured_at).
   const { data } = await supabase
-    .from('signal_posts')
+    .from('buckler_posts')
     .select('captured_at, source, post_type')
     .eq('profile_id', profileId)
     .order('captured_at', { ascending: false })

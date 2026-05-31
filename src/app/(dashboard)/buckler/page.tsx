@@ -6,7 +6,7 @@ import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from 'recharts';
 import { createClient } from '@/lib/supabase/client';
-import { getActiveProfileId, getOverviewData, type OverviewData } from '@/lib/signal-data';
+import { getActiveProfileId, getOverviewData, type OverviewData } from '@/lib/buckler-data';
 
 // ─── Shared styles ────────────────────────────────────────
 const SCAN_LINE = 'repeating-linear-gradient(to bottom, transparent 0px, transparent 4px, rgba(28,22,18,0.4) 4px, rgba(28,22,18,0.4) 5px)';
@@ -53,10 +53,10 @@ const customTooltipStyle = {
 };
 
 const NAV_LINKS = [
-  { href: '/signal', label: 'OVERVIEW' },
-  { href: '/signal/posts', label: 'POSTS' },
-  { href: '/signal/audience', label: 'AUDIENCE' },
-  { href: '/signal/health', label: 'HEALTH' },
+  { href: '/buckler', label: 'OVERVIEW' },
+  { href: '/buckler/posts', label: 'POSTS' },
+  { href: '/buckler/audience', label: 'AUDIENCE' },
+  { href: '/buckler/health', label: 'HEALTH' },
 ];
 
 function formatK(n: number): string {
@@ -64,7 +64,7 @@ function formatK(n: number): string {
   return String(n);
 }
 
-export default function SignalOverview() {
+export default function BucklerOverview() {
   const [range, setRange] = useState<'30' | '60' | '90'>('30');
   const [data, setData] = useState<OverviewData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -115,10 +115,10 @@ export default function SignalOverview() {
     <div style={{ background: '#16120E', minHeight: '100vh', color: '#F0E4D0', fontFamily: "'JetBrains Mono', monospace" }}>
       {/* Nav */}
       <nav style={{ background: '#100E0C', borderBottom: '1px solid #413226', padding: '16px 32px', display: 'flex', alignItems: 'center', gap: 32 }}>
-        <span style={{ fontFamily: "'Silkscreen', monospace", fontSize: 10, color: '#6E604E', letterSpacing: '0.2em' }}>◈ SIGNAL</span>
+        <span style={{ fontFamily: "'Silkscreen', monospace", fontSize: 10, color: '#6E604E', letterSpacing: '0.2em' }}>◈ BUCKLER</span>
         <div style={{ display: 'flex', gap: 24, fontSize: 11 }}>
           {NAV_LINKS.map(({ href, label }) => (
-            <Link key={href} href={href} style={{ color: href === '/signal' ? '#E8682A' : '#6E604E', textDecoration: 'none', fontFamily: "'Silkscreen', monospace", fontSize: 9, letterSpacing: '0.15em' }}>
+            <Link key={href} href={href} style={{ color: href === '/buckler' ? '#E8682A' : '#6E604E', textDecoration: 'none', fontFamily: "'Silkscreen', monospace", fontSize: 9, letterSpacing: '0.15em' }}>
               {label}
             </Link>
           ))}
@@ -211,7 +211,7 @@ export default function SignalOverview() {
                 {topPosts.map(post => (
                   <tr key={post.id} style={{ borderBottom: '1px solid rgba(65,50,38,0.5)' }}>
                     <td style={{ padding: '12px 12px', color: '#F0E4D0', maxWidth: 400 }}>
-                      <Link href={`/signal/posts/${post.id}`} style={{ color: '#F0E4D0', textDecoration: 'none' }}>
+                      <Link href={`/buckler/posts/${post.id}`} style={{ color: '#F0E4D0', textDecoration: 'none' }}>
                         <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}>
                           {post.snippet}
                         </span>

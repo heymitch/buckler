@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 
-// ─── Shared styles (matches signal/page.tsx) ──────────────────────────────────
+// ─── Shared styles (matches buckler/page.tsx) ──────────────────────────────────
 const SCAN_LINE = 'repeating-linear-gradient(to bottom, transparent 0px, transparent 4px, rgba(28,22,18,0.4) 4px, rgba(28,22,18,0.4) 5px)';
 
 const panelStyle: React.CSSProperties = {
@@ -30,10 +30,10 @@ function ScanOverlay() {
 }
 
 const NAV_LINKS = [
-  { href: '/signal', label: 'OVERVIEW' },
-  { href: '/signal/posts', label: 'POSTS' },
-  { href: '/signal/audience', label: 'AUDIENCE' },
-  { href: '/signal/health', label: 'HEALTH' },
+  { href: '/buckler', label: 'OVERVIEW' },
+  { href: '/buckler/posts', label: 'POSTS' },
+  { href: '/buckler/audience', label: 'AUDIENCE' },
+  { href: '/buckler/health', label: 'HEALTH' },
 ];
 
 type Profile = { id: string; name: string };
@@ -47,11 +47,11 @@ export default function ConnectPage() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<'url' | 'token' | null>(null);
 
-  const ingestUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/ingest`;
+  const ingestUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/buckler-ingest`;
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.from('signal_profiles').select('id,name').order('name').then(({ data }) => {
+    supabase.from('buckler_profiles').select('id,name').order('name').then(({ data }) => {
       const rows = (data ?? []) as Profile[];
       setProfiles(rows);
       if (rows.length > 0) setProfileId(rows[0].id);
@@ -114,7 +114,7 @@ export default function ConnectPage() {
     <div style={{ background: '#16120E', minHeight: '100vh', color: '#F0E4D0', fontFamily: "'JetBrains Mono', monospace" }}>
       {/* Nav */}
       <nav style={{ background: '#100E0C', borderBottom: '1px solid #413226', padding: '16px 32px', display: 'flex', alignItems: 'center', gap: 32 }}>
-        <span style={{ fontFamily: "'Silkscreen', monospace", fontSize: 10, color: '#6E604E', letterSpacing: '0.2em' }}>◈ SIGNAL</span>
+        <span style={{ fontFamily: "'Silkscreen', monospace", fontSize: 10, color: '#6E604E', letterSpacing: '0.2em' }}>◈ BUCKLER</span>
         <div style={{ display: 'flex', gap: 24, fontSize: 11 }}>
           {NAV_LINKS.map(({ href, label }) => (
             <Link key={href} href={href} style={{ color: '#6E604E', textDecoration: 'none', fontFamily: "'Silkscreen', monospace", fontSize: 9, letterSpacing: '0.15em' }}>
