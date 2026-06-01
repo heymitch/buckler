@@ -1,11 +1,21 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-// Dev-only convenience: skips the magic-link flow on localhost.
-// 404s unless NODE_ENV === 'development', so it can never establish a session
-// in a real deploy. Credentials come from BUCKLER_DEV_LOGIN_EMAIL / _PASSWORD.
+// Password-login bypass that skips the magic-link flow. Signs in as the single
+// configured account (BUCKLER_DEV_LOGIN_EMAIL / _PASSWORD).
+//
+// Enabled when EITHER:
+//   - NODE_ENV === 'development'  (local dev convenience), OR
+//   - BUCKLER_AUTO_LOGIN === 'true'  (single-account deployment)
+//
+// SECURITY: in a deployment you MUST front this with an external gate
+// (e.g. Vercel Authentication / Password Protection). It only ever signs in
+// the one configured owner account, but without a gate it would let anyone do so.
+// 404s otherwise, so a normal multi-tenant install can never reach it.
 export async function GET(req: Request) {
-  if (process.env.NODE_ENV !== 'development') {
+  const enabled =
+    process.env.NODE_ENV === 'development' || process.env.BUCKLER_AUTO_LOGIN === 'true';
+  if (!enabled) {
     return new NextResponse('Not found', { status: 404 });
   }
 
